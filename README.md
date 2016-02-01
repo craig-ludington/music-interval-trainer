@@ -10,3 +10,9 @@ Requires a `say` command to output the name of the interval.
 Requires an `open` command to play an OGG file.
 
 Both commands are installed on OS X by default.
+
+## Install
+
+Clone this repository, then
+
+``cd wherever-you-installed-it  && ./drill``
