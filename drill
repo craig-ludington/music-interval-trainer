@@ -1,0 +1,71 @@
+#!/bin/bash
+# usage:
+#  drill [--hint | -h]
+
+usage() {
+  cat 1>&2 <<EOF
+Usage:
+  drill [--hint | -h]
+
+A musical interval recognition game.
+Plays an interval, then says it's name after a pause.
+Hints, if requested, are the names of songs using that interval.
+
+Options:
+  --hint, -h  mention a song using that interval
+
+Dependencies:
+  The "say" command, as found on OS X, for the name of the interval, and the name of the song hint.
+  The "open" command, as found on OS X, to play an OGG file.
+EOF
+exit 0
+}
+
+
+intervals[0]="min2.ogg    minor-second.ogg       pink-panther.ogg"
+intervals[1]="M2.ogg      major-second.ogg       happy-birthday.ogg"
+intervals[2]="min3.ogg    minor-third.ogg        impossible-dream.ogg"
+intervals[3]="M3.ogg      major-third.ogg        summer-time.ogg"
+intervals[4]="P4.ogg      perfect-fourth.ogg     here-comes-the-bride.ogg"
+intervals[5]="A4.ogg      augmented-fourth.ogg   the-simpsons.ogg"
+intervals[6]="P5.ogg      perfect-fifth.ogg      twinkle-twinkle-little-star.ogg"
+intervals[7]="min6.ogg    minor-sixth.ogg        the-entertainer.ogg"
+intervals[8]="M6.ogg      major-sixth.ogg        nbc-jingle.ogg"
+intervals[9]="min7.ogg    minor-seventh.ogg      somewhere.ogg"
+intervals[10]="P8ve.ogg   perfect-octave.ogg     somewhere-over-the-rainbow.ogg"
+
+random-record() { echo ${intervals[($RANDOM % 11)]}; }
+sound-of()      { echo $1 | while read x y z; do echo $x; done; }
+name-of()       { echo $1 | while read x y z; do echo $y; done; }
+song-of()       { echo $1 | while read x y z; do echo $z; done; }
+clean()         { echo $1 | sed -n 's/-/ /g; s/\.ogg//; p;'; }
+play() {
+  local rec=$(random-record)
+  local sound=$(sound-of "$rec")
+  local name=$(clean $(name-of "$rec"))
+  local song=$(clean $(song-of "$rec"))
+  local dir
+  case $((RANDOM % 3)) in
+      0) dir=simultaneous ;;
+      1) dir=up ;;
+      2) dir=dn ;;
+  esac      
+
+  open $dir/$sound
+  sleep 5
+  say $name
+  if $hint; then
+    sleep 1
+    say $song
+  fi    
+  sleep 3
+}
+
+hint=false
+case ${1} in
+  --hint) hint=true ;;
+  '') ;;
+  *) usage ;;
+esac
+if [[ $1 = hint ]]; then hint=true; fi
+while :; do play; done
