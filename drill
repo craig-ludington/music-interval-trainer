@@ -53,11 +53,11 @@ play() {
 
   open $dir/$sound
   sleep 5
-  say $name
   if $hint; then
     sleep 1
     say $song
   fi    
+  say $name
   sleep 3
 }
 
