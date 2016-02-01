@@ -5,7 +5,7 @@
 usage() {
   cat 1>&2 <<EOF
 Usage:
-  drill [--hint | -h]
+  drill [--hint]
 
 A musical interval recognition game.
 Plays an interval, then says it's name after a pause.
