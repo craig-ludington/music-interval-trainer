@@ -1,11 +1,9 @@
 #!/bin/bash
-# usage:
-#  drill [--hint | -h]
 
 usage() {
   cat 1>&2 <<EOF
 Usage:
-  drill [--hint]
+  drill [-c number-of-choices] [-d] [-h] [-i number-of-iterations]
 
 A musical interval recognition game.
 Plays an interval, then says it's name after a pause.
