@@ -12,7 +12,10 @@ Plays an interval, then says it's name after a pause.
 Hints, if requested, are the names of songs using that interval.
 
 Options:
-  --hint, -h  mention a song using that interval
+  -c  number of intervals to choose from (2 randomly selects from minor 2nd and major 2nd)
+  -d  debug -- say the options then exit
+  -h  hint by mentioning a song using that interval
+  -i  number of iterations
 
 Dependencies:
   The "say" command, as found on OS X, for the name of the interval, and the name of the song hint.
@@ -32,15 +35,17 @@ intervals[6]="P5.ogg      perfect-fifth.ogg      twinkle-twinkle-little-star.ogg
 intervals[7]="min6.ogg    minor-sixth.ogg        the-entertainer.ogg"
 intervals[8]="M6.ogg      major-sixth.ogg        nbc-jingle.ogg"
 intervals[9]="min7.ogg    minor-seventh.ogg      somewhere.ogg"
+intervals[9]="M7.ogg      major-seventh.ogg      c to b.ogg"
 intervals[10]="P8ve.ogg   perfect-octave.ogg     somewhere-over-the-rainbow.ogg"
 
-random-record() { echo ${intervals[($RANDOM % 11)]}; }
+random-record() { local limit=${1:?}; echo ${intervals[($RANDOM % $limit)]}; }
 sound-of()      { echo $1 | while read x y z; do echo $x; done; }
 name-of()       { echo $1 | while read x y z; do echo $y; done; }
 song-of()       { echo $1 | while read x y z; do echo $z; done; }
 clean()         { echo $1 | sed -n 's/-/ /g; s/\.ogg//; p;'; }
 play() {
-  local rec=$(random-record)
+  local choices=${1:?}
+  local rec=$(random-record $((++choices)))
   local sound=$(sound-of "$rec")
   local name=$(clean $(name-of "$rec"))
   local song=$(clean $(song-of "$rec"))
@@ -51,21 +56,48 @@ play() {
       2) dir=dn ;;
   esac      
 
+  # open -b com.google.Chrome images/${sound%%.ogg}.jpg
   open $dir/$sound
+
   sleep 5
   if $hint; then
     sleep 1
     say $song
   fi    
+
   say $name
   sleep 3
 }
 
+choices=11
 hint=false
-case ${1} in
-  --hint) hint=true ;;
-  '') ;;
-  *) usage ;;
-esac
-if [[ $1 = hint ]]; then hint=true; fi
-while :; do play; done
+iterations=forever
+debug=false
+while getopts hi:c:d arg ; do
+  case $arg in
+    h) hint=true ;;
+    i) iterations=$OPTARG ;;
+    c) choices=$OPTARG ;;
+    d) debug=true ;;
+    *) usage ;;
+  esac
+
+done
+
+if $debug ; then
+  if [[ $iterations = forever ]] ; then iterations= ; fi
+  echo playing $iterations intervals from $(name-of "${intervals[0]}") to $(name-of "${intervals[$((choices--))]}") |
+       sed s/\.ogg//g |
+       say
+  if $hint ; then say hints are on; fi
+  exit 1
+fi
+
+while :; do
+    case $iterations in
+      0)       say done; exit 0 ;;
+      forever) ;;
+      *)       : $((iterations--)) ;;
+    esac
+    play $choices	
+done
